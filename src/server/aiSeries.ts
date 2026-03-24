@@ -8,6 +8,7 @@ const publicImagesDir = path.join(process.cwd(), "public", "images");
 const optimizedAiDir = path.join(process.cwd(), "public", ".optimized-ai");
 
 const TARGET_MAX_HEIGHT_PX = 1400;
+const SHOULD_OPTIMIZE_AT_RUNTIME = process.env.VERCEL !== "1";
 
 let sharpSingleton: typeof import("sharp") | null = null;
 
@@ -244,6 +245,15 @@ export async function getAiSeries(): Promise<WorkSeries[]> {
 
     for (const fileName of orderedFiles) {
       const inputFullPath = path.join(publicImagesDir, dirName, fileName);
+
+      if (!SHOULD_OPTIMIZE_AT_RUNTIME) {
+        images.push({
+          src: `/images/${encodeURIComponent(dirName)}/${encodeURIComponent(fileName)}`,
+          alt: `${dirName} image ${images.length + 1}`,
+        });
+        continue;
+      }
+
       const st = fs.statSync(inputFullPath);
       const cacheKey = `${st.mtimeMs}:${st.size}`;
       const hash = crypto.createHash("sha1").update(cacheKey).digest("hex").slice(0, 10);

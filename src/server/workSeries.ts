@@ -12,6 +12,7 @@ const optimizedWorkDir = path.join(
   ".optimized-work"
 );
 const TARGET_MAX_HEIGHT_PX = 1400;
+const SHOULD_OPTIMIZE_AT_RUNTIME = process.env.VERCEL !== "1";
 
 let sharpSingleton: typeof import("sharp") | null = null;
 
@@ -146,6 +147,14 @@ export async function getWorkSeries(): Promise<WorkSeries[]> {
     for (let idx = 0; idx < reorderedFiles.length; idx++) {
       const fileName = reorderedFiles[idx]!;
       const inputFullPath = path.join(publicImagesDir, dirName, fileName);
+
+      if (!SHOULD_OPTIMIZE_AT_RUNTIME) {
+        images.push({
+          src: `/images/${encodeURIComponent(dirName)}/${encodeURIComponent(fileName)}`,
+          alt: `${dirName} image ${idx + 1}`,
+        });
+        continue;
+      }
 
       const st = fs.statSync(inputFullPath);
       const cacheKey = `${st.mtimeMs}:${st.size}`;
