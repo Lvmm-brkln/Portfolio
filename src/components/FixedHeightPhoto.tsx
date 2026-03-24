@@ -13,12 +13,14 @@ export function FixedHeightPhoto({
   heightClamp,
   modalImages,
   modalIndex,
+  eager,
 }: {
   image: PortfolioImage;
   // Hauteur responsive conservant une même hauteur pour toutes les images d'une série.
   heightClamp?: string; // CSS clamp(), ex: "clamp(220px, 30vw, 520px)"
   modalImages?: PortfolioImage[];
   modalIndex?: number;
+  eager?: boolean;
 }) {
   const hoverEventName = "gallery-hover-change";
   const reduceMotion = useReducedMotion();
@@ -190,7 +192,8 @@ export function FixedHeightPhoto({
           transformOrigin: "center center",
         }}
         className="transition-[filter,transform] duration-300 ease-out group-hover/photo:brightness-[1.06] group-hover/photo:contrast-[1.05] group-hover/photo:drop-shadow-[0_18px_42px_rgba(0,0,0,0.28)]"
-        loading="lazy"
+        loading={eager ? "eager" : "lazy"}
+        fetchPriority={eager ? "high" : "auto"}
         decoding="async"
         draggable={false}
       />

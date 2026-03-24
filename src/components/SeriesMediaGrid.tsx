@@ -5,10 +5,12 @@ export function SeriesMediaGrid({
   images,
   rowSizes,
   modalImages,
+  prioritize,
 }: {
   images: PortfolioImage[];
   rowSizes?: number[];
   modalImages?: PortfolioImage[];
+  prioritize?: boolean;
 }) {
   const modalList = modalImages ?? images;
 
@@ -44,7 +46,7 @@ export function SeriesMediaGrid({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {rows.map((row) => {
+      {rows.map((row, rowIdx) => {
         const key = row.map((img) => img.src).join("|");
 
         return (
@@ -56,6 +58,7 @@ export function SeriesMediaGrid({
                   image={image}
                   heightClamp={heightClamp}
                   modalImages={modalList}
+                  eager={Boolean(rowIdx === 0 && prioritize)}
                   modalIndex={
                     indexByKey.get(`${image.src}|${image.alt}`) ?? 0
                   }

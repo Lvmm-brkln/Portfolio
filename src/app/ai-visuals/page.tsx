@@ -62,6 +62,7 @@ export default async function AiVisualsPage() {
                 series={series}
                 isFirst={index === 0}
                 modalImages={modalImages}
+                prioritize={index < 2}
               />
             ))}
           </div>

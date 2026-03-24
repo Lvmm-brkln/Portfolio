@@ -5,10 +5,12 @@ export function SeriesBlock({
   series,
   isFirst,
   modalImages,
+  prioritize,
 }: {
   series: WorkSeries;
   isFirst?: boolean;
   modalImages?: PortfolioImage[];
+  prioritize?: boolean;
 }) {
   return (
     <section className="space-y-7">
@@ -28,6 +30,7 @@ export function SeriesBlock({
         images={series.images}
         rowSizes={series.rowSizes}
         modalImages={modalImages}
+        prioritize={prioritize}
       />
     </section>
   );

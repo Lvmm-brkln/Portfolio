@@ -258,23 +258,6 @@ export function ImageModalProvider({
                 }}
               />
 
-              {/* Liquid directional reveal */}
-              <motion.div
-                key={`wipe-${state.transitionKey}`}
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 z-[2]"
-                initial={{ scaleX: 0, opacity: 0 }}
-                animate={{ scaleX: 1, opacity: [0, 0.82, 0] }}
-                exit={{ scaleX: 1, opacity: 0 }}
-                transition={{ duration: 0.2, ease: [0.16, 0.84, 0.22, 1] }}
-                style={{
-                  transformOrigin:
-                    state.direction > 0 ? "left center" : "right center",
-                  background:
-                    "linear-gradient(90deg, rgba(245,247,255,0.68), rgba(255,255,255,0.12) 32%, rgba(255,255,255,0.00) 66%)",
-                }}
-              />
-
               {prev && state.prevIndex !== state.index ? (
                 <div
                   className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
