@@ -29,6 +29,7 @@ export function SeriesBlock({
       <SeriesMediaGrid
         images={series.images}
         rowSizes={series.rowSizes}
+        mobileOrder={series.mobileOrder}
         modalImages={modalImages}
         prioritize={prioritize}
       />

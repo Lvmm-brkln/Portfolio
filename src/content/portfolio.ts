@@ -9,6 +9,8 @@ export type WorkSeries = {
   title: string;
   descriptor?: string;
   rowSizes?: number[]; // e.g. [3,2] or [2,3] for 5 images
+  // Optional mobile-specific order using 1-based indices.
+  mobileOrder?: number[];
   images: PortfolioImage[];
 };
 

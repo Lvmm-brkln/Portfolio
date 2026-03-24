@@ -29,6 +29,7 @@ export function FixedHeightPhoto({
   const [centerShift, setCenterShift] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const [isLifted, setIsLifted] = useState(false);
+  const [isPortraitOrSquare, setIsPortraitOrSquare] = useState(false);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const itemIdRef = useRef(`${image.src}|${image.alt}`);
   const hoverScale = 1.2;
@@ -132,6 +133,30 @@ export function FixedHeightPhoto({
     }, 340);
   };
 
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const el = e.currentTarget;
+    const w = el.naturalWidth;
+    const h = el.naturalHeight;
+    if (!w || !h) return;
+    const ratio = w / h;
+
+    // Give portraits/squares slightly more visual weight in the feed.
+    if (ratio <= 0.95) {
+      setIsPortraitOrSquare(true);
+      return;
+    }
+    if (ratio <= 1.12) {
+      setIsPortraitOrSquare(true);
+      return;
+    }
+    setIsPortraitOrSquare(false);
+  };
+
+  const imageTransform = (() => {
+    if (isBabyVibes) return "scale(1.2) translateY(-12px)";
+    return undefined;
+  })();
+
   return (
     <motion.div
       initial={false}
@@ -159,6 +184,7 @@ export function FixedHeightPhoto({
         "flex-none",
         "shrink-0",
         "relative",
+        isPortraitOrSquare ? "portrait-mobile-boost" : "",
         "cursor-zoom-in",
         "transition-[opacity,transform,filter] duration-300 ease-out hover:!opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/50 focus-visible:ring-offset-2",
       ].join(" ")}
@@ -188,14 +214,18 @@ export function FixedHeightPhoto({
           height: "100%",
           width: "auto",
           display: "block",
-          transform: isBabyVibes ? "scale(1.2) translateY(-12px)" : undefined,
+          transform: imageTransform,
           transformOrigin: "center center",
         }}
-        className="transition-[filter,transform] duration-300 ease-out group-hover/photo:brightness-[1.06] group-hover/photo:contrast-[1.05] group-hover/photo:drop-shadow-[0_18px_42px_rgba(0,0,0,0.28)]"
+        className={[
+          "transition-[filter,transform] duration-300 ease-out group-hover/photo:brightness-[1.06] group-hover/photo:contrast-[1.05] group-hover/photo:drop-shadow-[0_18px_42px_rgba(0,0,0,0.28)]",
+          isPortraitOrSquare ? "portrait-mobile-boost-img" : "",
+        ].join(" ")}
         loading={eager ? "eager" : "lazy"}
         fetchPriority={eager ? "high" : "auto"}
         decoding="async"
         draggable={false}
+        onLoad={handleImageLoad}
       />
     </motion.div>
   );

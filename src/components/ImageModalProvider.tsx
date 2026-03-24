@@ -165,6 +165,8 @@ export function ImageModalProvider({
 
   const prev =
     state.prevIndex != null ? state.images[state.prevIndex] : undefined;
+  const modalHeight =
+    "min(85dvh, calc(100dvh - 6rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)))";
 
   return (
     <ImageModalContext.Provider value={api}>
@@ -270,8 +272,8 @@ export function ImageModalProvider({
                     style={{
                       display: "block",
                       width: "auto",
-                      height: "85vh",
-                      maxWidth: "none",
+                      height: modalHeight,
+                      maxWidth: "94vw",
                       objectFit: "contain",
                       filter: "drop-shadow(0 22px 70px rgba(0,0,0,0.55))",
                     }}
@@ -314,8 +316,8 @@ export function ImageModalProvider({
                   style={{
                     display: "block",
                     width: "auto",
-                    height: "85vh",
-                    maxWidth: "none",
+                    height: modalHeight,
+                    maxWidth: "94vw",
                     objectFit: "contain",
                     filter:
                       "drop-shadow(0 20px 64px rgba(0,0,0,0.52)) drop-shadow(0 0 14px rgba(120,150,255,0.12))",

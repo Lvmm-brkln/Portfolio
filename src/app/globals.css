@@ -55,6 +55,21 @@ button:focus-visible,
   transition-timing-function: var(--easing-standard);
 }
 
+@media (max-width: 639px) {
+  .portrait-mobile-boost {
+    width: 74vw;
+    min-width: 74vw;
+    height: auto !important;
+  }
+
+  .portrait-mobile-boost .portrait-mobile-boost-img {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain;
+    transform: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

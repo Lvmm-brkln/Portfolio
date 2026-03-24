@@ -10,7 +10,7 @@ export default async function AiVisualsPage() {
     <PageEnter>
       <main className="flex-1">
         <section className="w-full pb-20 pt-14 sm:pt-16">
-          <header className="mx-auto max-w-6xl px-6">
+          <header className="mx-auto max-w-6xl px-4 sm:px-6">
             <p className="text-xs uppercase tracking-[0.2em] text-foreground/55">
               Image Generation and Curation
             </p>
@@ -23,7 +23,7 @@ export default async function AiVisualsPage() {
             </p>
           </header>
 
-          <section className="mx-auto mt-10 max-w-6xl px-6">
+          <section className="mx-auto mt-10 max-w-6xl px-4 sm:px-6">
             <div className="grid gap-4 md:grid-cols-3">
               <article className="border border-black/10 p-4">
                 <p className="text-xs uppercase tracking-[0.16em] text-foreground/55">
@@ -55,7 +55,7 @@ export default async function AiVisualsPage() {
             </div>
           </section>
 
-          <div className="gallery-scope mx-auto mt-14 max-w-6xl space-y-12 px-6">
+          <div className="gallery-scope mx-auto mt-12 max-w-6xl space-y-12 px-4 sm:mt-14 sm:px-6">
             {aiSeries.map((series, index) => (
               <SeriesBlock
                 key={series.id}
