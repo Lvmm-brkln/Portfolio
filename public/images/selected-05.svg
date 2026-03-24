@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
+  <rect width="800" height="1000" fill="#f6f2ea" />
+  <rect x="64" y="64" width="672" height="872" rx="28" fill="none" stroke="#0b0b0c" stroke-opacity="0.10" stroke-width="4" />
+  <rect x="92" y="92" width="616" height="816" rx="24" fill="none" stroke="#0b0b0c" stroke-opacity="0.06" stroke-width="3" />
+  <text x="400" y="520" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="44" fill="#0b0b0c" fill-opacity="0.65">Selected 05</text>
+  <text x="400" y="586" text-anchor="middle" font-family="ui-serif, Georgia, serif" font-size="22" fill="#0b0b0c" fill-opacity="0.45">Placeholder</text>
+</svg>
+
