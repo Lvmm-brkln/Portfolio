@@ -319,10 +319,11 @@ export function ImageModalProvider({
                 />
               </div>
 
-              {prev && state.prevIndex !== state.index ? (
-                <div className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2">
+              <AnimatePresence mode="sync" initial={false}>
+                {prev && state.prevIndex !== state.index ? (
                   <motion.div
                     key={`prev-wrap-${state.transitionKey}-${prev.src}`}
+                    className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2"
                     style={{ willChange: "transform, opacity" }}
                     initial={{
                       opacity: 1,
@@ -334,8 +335,13 @@ export function ImageModalProvider({
                       x: -state.direction * slidePx,
                       scale: 0.995,
                     }}
+                    exit={{
+                      opacity: 0,
+                      x: -state.direction * slidePx,
+                      scale: 0.995,
+                    }}
                     transition={{
-                      duration: 0.45,
+                      duration: 0.35,
                       ease: [0.2, 0.7, 0.2, 1],
                     }}
                   >
@@ -356,19 +362,15 @@ export function ImageModalProvider({
                       }}
                     />
                   </motion.div>
-                </div>
-              ) : null}
+                ) : null}
 
-              <div className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2">
                 <motion.div
                   key={`curr-wrap-${state.transitionKey}-${current.src}`}
+                  className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2"
                   style={{ willChange: "transform, opacity" }}
                   initial={{
                     opacity: 0,
-                    x:
-                      state.direction > 0
-                        ? slidePx
-                        : -slidePx,
+                    x: state.direction > 0 ? slidePx : -slidePx,
                     scale: 1.01,
                   }}
                   animate={{
@@ -376,8 +378,13 @@ export function ImageModalProvider({
                     x: 0,
                     scale: 1,
                   }}
+                  exit={{
+                    opacity: 0,
+                    x: -state.direction * slidePx,
+                    scale: 0.995,
+                  }}
                   transition={{
-                    duration: 0.45,
+                    duration: 0.35,
                     ease: [0.2, 0.7, 0.2, 1],
                   }}
                 >
@@ -404,7 +411,7 @@ export function ImageModalProvider({
                     }}
                   />
                 </motion.div>
-              </div>
+              </AnimatePresence>
             </div>
           </motion.div>
         ) : null}
