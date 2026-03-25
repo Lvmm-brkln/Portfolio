@@ -161,7 +161,10 @@ export function ImageModalProvider({
       const img = new window.Image();
       img.src = prevSrc;
     }
-  }, [state.open, state.index, state.images]);
+    // `state.images` n'est pas dans les deps : pour éviter des triggers inutiles
+    // pendant la navigation (la navigation change surtout `state.index`).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.open, state.index]);
 
   const prev =
     state.prevIndex != null ? state.images[state.prevIndex] : undefined;
