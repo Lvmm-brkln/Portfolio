@@ -6,17 +6,24 @@ export function SeriesBlock({
   isFirst,
   modalImages,
   prioritize,
+  /** Tighter top lead before the first row of images (Photography). Relaxed = AI Visuals. */
+  firstLead = "relaxed",
 }: {
   series: WorkSeries;
   isFirst?: boolean;
   modalImages?: PortfolioImage[];
   prioritize?: boolean;
+  firstLead?: "tight" | "relaxed";
 }) {
+  const firstLeadClass =
+    firstLead === "tight"
+      ? "h-6 sm:h-8"
+      : "h-10 sm:h-12";
+
   return (
     <section className="space-y-7">
       {isFirst ? (
-        // Keep the original breathing room for the very first block.
-        <div aria-hidden="true" className="h-[96px] sm:h-[106px]" />
+        <div aria-hidden="true" className={firstLeadClass} />
       ) : (
         // Rebalance whitespace around inter-block divider.
         <div aria-hidden="true" className="space-y-0">

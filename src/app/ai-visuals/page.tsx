@@ -15,53 +15,18 @@ export default async function AiVisualsPage() {
     <PageEnter>
       <main className="flex-1">
         <OrderedImagePreloader sources={topSources} />
-        <section className="w-full pb-20 pt-14 sm:pt-16">
+        <section className="w-full pb-20 pt-9 sm:pt-10">
           <header className="mx-auto max-w-6xl px-4 sm:px-6">
-            <p className="text-xs uppercase tracking-[0.2em] text-foreground/55">
-              Image Generation and Curation
-            </p>
-            <h1 className="mt-3 font-serif text-5xl tracking-tight sm:text-6xl">
+            <h1 className="font-serif text-5xl leading-[1.02] tracking-tight sm:text-6xl md:text-7xl">
               AI Visuals
             </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-foreground/72 sm:text-base">
-              A curated set of prompt-led studies, compositions, and visual
-              experiments.
+            <p className="mt-2.5 max-w-3xl text-sm leading-7 text-foreground/70 sm:mt-3 sm:text-base">
+              A selection of generated images shaped through prompting, iteration,
+              and visual judgment.
             </p>
           </header>
 
-          <section className="mx-auto mt-10 max-w-6xl px-4 sm:px-6">
-            <div className="grid gap-4 md:grid-cols-3">
-              <article className="border border-black/10 p-4">
-                <p className="text-xs uppercase tracking-[0.16em] text-foreground/55">
-                  Prompt intention
-                </p>
-                <p className="mt-2 text-sm leading-7 text-foreground/72">
-                  Subject, tone, camera logic, and palette constraints are fixed before
-                  generation to avoid aesthetic drift.
-                </p>
-              </article>
-              <article className="border border-black/10 p-4">
-                <p className="text-xs uppercase tracking-[0.16em] text-foreground/55">
-                  Iteration protocol
-                </p>
-                <p className="mt-2 text-sm leading-7 text-foreground/72">
-                  Variants are compared side-by-side and advanced only when composition,
-                  light behavior, and style coherence improve measurably.
-                </p>
-              </article>
-              <article className="border border-black/10 p-4">
-                <p className="text-xs uppercase tracking-[0.16em] text-foreground/55">
-                  Selection criteria
-                </p>
-                <p className="mt-2 text-sm leading-7 text-foreground/72">
-                  Final images pass curation when visual hierarchy is clear and technical
-                  artifacts are absent under close inspection.
-                </p>
-              </article>
-            </div>
-          </section>
-
-          <div className="gallery-scope mx-auto mt-12 max-w-6xl space-y-12 px-4 sm:mt-14 sm:px-6">
+          <div className="gallery-scope mx-auto mt-8 max-w-6xl space-y-12 px-4 sm:mt-9 sm:px-6">
             {aiSeries.map((series, index) => (
               <SeriesBlock
                 key={series.id}
@@ -69,6 +34,7 @@ export default async function AiVisualsPage() {
                 isFirst={index === 0}
                 modalImages={modalImages}
                 prioritize={index < 2}
+                firstLead="relaxed"
               />
             ))}
           </div>
