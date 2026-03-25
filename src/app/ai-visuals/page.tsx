@@ -1,20 +1,21 @@
 import { PageEnter } from "@/components/PageEnter";
 import { SeriesBlock } from "@/components/SeriesBlock";
-import { OrderedImagePreloader } from "@/components/OrderedImagePreloader";
 import { getAiSeries } from "@/server/aiSeries";
+import { getOrderedPageSources } from "@/server/orderedPageSources";
+import { ResponsiveOrderedImagePreloader } from "@/components/ResponsiveOrderedImagePreloader";
 
 export default async function AiVisualsPage() {
   const aiSeries = await getAiSeries();
   const modalImages = aiSeries.flatMap((s) => s.images);
-  const topSources = aiSeries
-    .slice(0, 2)
-    .flatMap((s) => s.images)
-    .map((i) => i.src);
+  const { desktopSources, mobileSources } = getOrderedPageSources(aiSeries);
 
   return (
     <PageEnter>
       <main className="flex-1">
-        <OrderedImagePreloader sources={topSources} />
+        <ResponsiveOrderedImagePreloader
+          desktopSources={desktopSources}
+          mobileSources={mobileSources}
+        />
         <section className="w-full pb-20 pt-14 sm:pt-16">
           <header className="mx-auto max-w-6xl px-4 sm:px-6">
             <p className="text-xs uppercase tracking-[0.2em] text-foreground/55">

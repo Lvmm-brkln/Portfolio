@@ -1,21 +1,23 @@
 import { PageEnter } from "@/components/PageEnter";
 import { SeriesBlock } from "@/components/SeriesBlock";
-import { OrderedImagePreloader } from "@/components/OrderedImagePreloader";
 import { site } from "@/content/site";
 import { getWorkSeries } from "@/server/workSeries";
+import { getOrderedPageSources } from "@/server/orderedPageSources";
+import { ResponsiveOrderedImagePreloader } from "@/components/ResponsiveOrderedImagePreloader";
 
 export default async function Home() {
   const workSeries = await getWorkSeries();
   const modalImages = workSeries.flatMap((s) => s.images);
-  const topSources = workSeries
-    .slice(0, 2)
-    .flatMap((s) => s.images)
-    .map((i) => i.src);
+  const { desktopSources, mobileSources } = getOrderedPageSources(workSeries);
+  // Preload full page in deterministic order for the active layout only.
 
   return (
     <PageEnter>
       <main className="flex-1">
-        <OrderedImagePreloader sources={topSources} />
+        <ResponsiveOrderedImagePreloader
+          desktopSources={desktopSources}
+          mobileSources={mobileSources}
+        />
         <section className="w-full pb-20 pt-14 sm:pt-16">
           <header className="mx-auto max-w-6xl px-4 sm:px-6">
             <h1 className="font-serif text-5xl tracking-tight sm:text-6xl md:text-7xl">
