@@ -207,6 +207,13 @@ export function ImageModalProvider({
   const modalHeight =
     "min(85dvh, calc(100dvh - 6rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)))";
 
+  // Defensive fallbacks for React keys / accessibility.
+  // (Key warnings in dev were showing `key: ''`, so we never want empty strings.)
+  const currSrc = current?.src || "img";
+  const currAlt = current?.alt || "image";
+  const prevSrc = prev?.src || "img";
+  const prevAlt = prev?.alt || "image";
+
   return (
     <ImageModalContext.Provider value={api}>
       {children}
@@ -230,21 +237,20 @@ export function ImageModalProvider({
               className="pointer-events-none fixed inset-0 z-[101] flex items-center justify-center overflow-hidden"
               initial={{
                 opacity: 0,
-                x: slidePx * 0.08,
                 scale: 0.99,
               }}
               animate={{
                 opacity: 1,
-                x: 0,
                 scale: 1,
               }}
               exit={{
                 opacity: 0,
-                x: slidePx * 0.04,
                 scale: 0.99,
               }}
               transition={{
-                duration: 0.25,
+                // Must be >= child prev/curr exit duration (0.35s),
+                // otherwise the parent unmounts and cuts the image exit.
+                duration: 0.38,
                 ease: [0.2, 0.7, 0.2, 1],
               }}
             >
@@ -308,6 +314,7 @@ export function ImageModalProvider({
                   aria-hidden="true"
                   initial={{ opacity: 0, scale: 0.99 }}
                   animate={{ opacity: 0.9, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.99 }}
                   transition={{
                     duration: 0.45,
                     ease: [0.2, 0.7, 0.2, 1],
@@ -331,6 +338,7 @@ export function ImageModalProvider({
                     opacity: [0, 0.06, 0],
                     scaleX: [0, 1, 0],
                   }}
+                  exit={{ opacity: 0, scaleX: 0 }}
                   transition={{
                     duration: 0.45,
                     ease: [0.2, 0.7, 0.2, 1],
@@ -346,65 +354,17 @@ export function ImageModalProvider({
                 />
               </div>
 
-              <AnimatePresence mode="sync" initial={false}>
+              <AnimatePresence mode="sync">
                 {prev && state.prevIndex !== state.index ? (
-                  <div className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2">
-                    <motion.div
-                      key={`prev-wrap-${state.transitionKey}-${prev.src}`}
-                      style={{ willChange: "transform, opacity" }}
-                      initial={{
-                        opacity: 1,
-                        x: 0,
-                        scale: 1,
-                      }}
-                      animate={{
-                        opacity: 0,
-                        x: -state.direction * slidePx,
-                        scale: 0.995,
-                      }}
-                      exit={{
-                        opacity: 0,
-                        x: -state.direction * slidePx,
-                        scale: 0.995,
-                      }}
-                      transition={{
-                        duration: 0.35,
-                        ease: [0.2, 0.7, 0.2, 1],
-                      }}
-                    >
-                      <motion.img
-                        key={`prev-${state.transitionKey}-${prev.src}`}
-                        src={prev.src}
-                        alt={prev.alt}
-                        draggable={false}
-                        style={{
-                          display: "block",
-                          width: "auto",
-                          height: modalHeight,
-                          maxWidth: "94vw",
-                          objectFit: "contain",
-                          filter: "none",
-                          opacity: 1,
-                          transform: "scale(1)",
-                        }}
-                      />
-                    </motion.div>
-                  </div>
-                ) : null}
-
-                <div className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2">
                   <motion.div
-                    key={`curr-wrap-${state.transitionKey}-${current.src}`}
+                    key={`prev-${state.transitionKey}-${prevSrc}`}
+                    className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2"
                     style={{ willChange: "transform, opacity" }}
-                    initial={{
-                      opacity: 0,
-                      x: state.direction > 0 ? slidePx : -slidePx,
-                      scale: 1.01,
-                    }}
+                    initial={{ opacity: 1, x: 0, scale: 1 }}
                     animate={{
-                      opacity: 1,
-                      x: 0,
-                      scale: 1,
+                      opacity: 0,
+                      x: -state.direction * slidePx,
+                      scale: 0.995,
                     }}
                     exit={{
                       opacity: 0,
@@ -417,16 +377,10 @@ export function ImageModalProvider({
                     }}
                   >
                     <motion.img
-                      key={`curr-${state.transitionKey}-${current.src}`}
-                      src={current.src}
-                      alt={current.alt}
+                      key={`prev-img-${state.transitionKey}-${prevSrc}`}
+                      src={prev.src}
+                      alt={prevAlt}
                       draggable={false}
-                      drag="x"
-                      dragConstraints={{ left: 0, right: 0 }}
-                      dragElastic={0.08}
-                      onDragEnd={handleDragEnd}
-                      className="pointer-events-auto"
-                      onClick={(e) => e.stopPropagation()}
                       style={{
                         display: "block",
                         width: "auto",
@@ -439,7 +393,55 @@ export function ImageModalProvider({
                       }}
                     />
                   </motion.div>
-                </div>
+                ) : null}
+
+                <motion.div
+                  key={`curr-${state.transitionKey}-${currSrc}`}
+                  className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2"
+                  style={{ willChange: "transform, opacity" }}
+                  initial={{
+                    opacity: 0,
+                    x: state.direction > 0 ? slidePx : -slidePx,
+                    scale: 1.01,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    x: 0,
+                    scale: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    x: -state.direction * slidePx,
+                    scale: 0.995,
+                  }}
+                  transition={{
+                    duration: 0.35,
+                    ease: [0.2, 0.7, 0.2, 1],
+                  }}
+                >
+                  <motion.img
+                    key={`curr-img-${state.transitionKey}-${currSrc}`}
+                    src={current.src}
+                    alt={currAlt}
+                    draggable={false}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.08}
+                    onDragEnd={handleDragEnd}
+                    className="pointer-events-auto"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      display: "block",
+                      width: "auto",
+                      height: modalHeight,
+                      maxWidth: "94vw",
+                      objectFit: "contain",
+                      filter: "none",
+                      opacity: 1,
+                      transform: "scale(1)",
+                    }}
+                  />
+                </motion.div>
               </AnimatePresence>
             </div>
             </motion.div>
