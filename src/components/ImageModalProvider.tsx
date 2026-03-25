@@ -49,6 +49,10 @@ export function ImageModalProvider({
   children: React.ReactNode;
 }) {
   const preloadedSrcRef = useRef<Set<string>>(new Set());
+  const [slidePx] = useState(() => {
+    if (typeof window === "undefined") return 1200;
+    return Math.round(window.innerWidth * 0.95);
+  });
 
   const [state, setState] = useState<ModalState>({
     open: false,
@@ -76,7 +80,6 @@ export function ImageModalProvider({
           preloadedSrcRef.current.add(src);
 
           const img = new window.Image();
-          img.decoding = "async";
           img.src = src;
         }
 
@@ -115,7 +118,6 @@ export function ImageModalProvider({
           preloadedSrcRef.current.add(src);
 
           const img = new window.Image();
-          img.decoding = "async";
           img.src = src;
         }
 
@@ -144,7 +146,6 @@ export function ImageModalProvider({
           preloadedSrcRef.current.add(src);
 
           const img = new window.Image();
-          img.decoding = "async";
           img.src = src;
         }
 
@@ -213,16 +214,17 @@ export function ImageModalProvider({
       <AnimatePresence mode="sync">
         {state.open && current ? (
           <motion.div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => api.closeModal()}
+            transition={{ duration: 0.2, ease: [0.2, 0.7, 0.2, 1] }}
           >
             <button
               type="button"
               aria-label="Close modal"
-              className="pointer-events-auto absolute right-4 top-4 z-20 rounded-full bg-white/10 px-3 py-2 text-xs font-medium text-white backdrop-blur transition-colors hover:bg-white/15 sm:right-6 sm:top-6"
+              className="pointer-events-auto absolute right-4 top-4 z-20 rounded-full bg-white/10 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-white/15 sm:right-6 sm:top-6"
               style={{
                 top: "max(1rem, env(safe-area-inset-top))",
                 right: "max(1rem, env(safe-area-inset-right))",
@@ -238,7 +240,7 @@ export function ImageModalProvider({
             <button
               type="button"
               aria-label="Previous image"
-              className="pointer-events-auto absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white backdrop-blur transition-colors hover:bg-white/15 sm:left-6 sm:p-3.5"
+              className="pointer-events-auto absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/15 sm:left-6 sm:p-3.5"
               style={{
                 left: "max(0.5rem, env(safe-area-inset-left))",
               }}
@@ -253,7 +255,7 @@ export function ImageModalProvider({
             <button
               type="button"
               aria-label="Next image"
-              className="pointer-events-auto absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white backdrop-blur transition-colors hover:bg-white/15 sm:right-6 sm:p-3.5"
+              className="pointer-events-auto absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/15 sm:right-6 sm:p-3.5"
               style={{
                 right: "max(0.5rem, env(safe-area-inset-right))",
               }}
@@ -273,81 +275,91 @@ export function ImageModalProvider({
               }}
             >
               {prev && state.prevIndex !== state.index ? (
+                <div className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2">
+                  <motion.div
+                    key={`prev-wrap-${state.transitionKey}-${prev.src}`}
+                    style={{ willChange: "transform, opacity" }}
+                    initial={{
+                      opacity: 1,
+                      x: 0,
+                      scale: 1,
+                    }}
+                    animate={{
+                      opacity: 0,
+                      x: -state.direction * slidePx,
+                      scale: 0.995,
+                    }}
+                    transition={{
+                      duration: 0.45,
+                      ease: [0.2, 0.7, 0.2, 1],
+                    }}
+                  >
+                    <motion.img
+                      key={`prev-${state.transitionKey}-${prev.src}`}
+                      src={prev.src}
+                      alt={prev.alt}
+                      draggable={false}
+                      style={{
+                        display: "block",
+                        width: "auto",
+                        height: modalHeight,
+                        maxWidth: "94vw",
+                        objectFit: "contain",
+                        filter: "none",
+                        opacity: 1,
+                        transform: "scale(1)",
+                      }}
+                    />
+                  </motion.div>
+                </div>
+              ) : null}
+
+              <div className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2">
                 <motion.div
-                  key={`prev-wrap-${state.transitionKey}-${prev.src}`}
-                  className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2"
+                  key={`curr-wrap-${state.transitionKey}-${current.src}`}
                   style={{ willChange: "transform, opacity" }}
                   initial={{
+                    opacity: 0,
+                    x:
+                      state.direction > 0
+                        ? slidePx
+                        : -slidePx,
+                    scale: 1.01,
+                  }}
+                  animate={{
                     opacity: 1,
                     x: 0,
                     scale: 1,
                   }}
-                  animate={{
-                    opacity: 0,
-                    x: -state.direction * 70,
-                    scale: 0.985,
+                  transition={{
+                    duration: 0.45,
+                    ease: [0.2, 0.7, 0.2, 1],
                   }}
-                  transition={{ duration: 0.18, ease: [0.2, 0.7, 0.2, 1] }}
                 >
                   <motion.img
-                    key={`prev-${state.transitionKey}-${prev.src}`}
-                    src={prev.src}
-                    alt={prev.alt}
+                    key={`curr-${state.transitionKey}-${current.src}`}
+                    src={current.src}
+                    alt={current.alt}
                     draggable={false}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.08}
+                    onDragEnd={handleDragEnd}
+                    className="pointer-events-auto"
+                    onClick={(e) => e.stopPropagation()}
                     style={{
                       display: "block",
                       width: "auto",
                       height: modalHeight,
                       maxWidth: "94vw",
                       objectFit: "contain",
-                      filter: "drop-shadow(0 22px 70px rgba(0,0,0,0.55))",
+                      filter: "none",
                       opacity: 1,
                       transform: "scale(1)",
                     }}
                   />
                 </motion.div>
-              ) : null}
-
-              <motion.div
-                key={`curr-wrap-${state.transitionKey}-${current.src}`}
-                className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2"
-                style={{ willChange: "transform, opacity" }}
-                initial={{
-                  opacity: 0,
-                  x: state.direction * 70,
-                  scale: 1.015,
-                }}
-                animate={{
-                  opacity: 1,
-                  x: 0,
-                  scale: 1,
-                }}
-                transition={{ duration: 0.2, ease: [0.2, 0.7, 0.2, 1] }}
-              >
-                <motion.img
-                  key={`curr-${state.transitionKey}-${current.src}`}
-                  src={current.src}
-                  alt={current.alt}
-                  draggable={false}
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={0.08}
-                  onDragEnd={handleDragEnd}
-                  className="pointer-events-auto"
-                  onClick={(e) => e.stopPropagation()}
-                  style={{
-                    display: "block",
-                    width: "auto",
-                    height: modalHeight,
-                    maxWidth: "94vw",
-                    objectFit: "contain",
-                    filter:
-                      "drop-shadow(0 20px 64px rgba(0,0,0,0.52)) drop-shadow(0 0 14px rgba(120,150,255,0.12))",
-                    opacity: 1,
-                    transform: "scale(1)",
-                  }}
-                />
-              </motion.div>
+              </div>
             </div>
           </motion.div>
         ) : null}
