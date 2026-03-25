@@ -239,6 +239,7 @@ export function ImageModalProvider({
             >
               {/* Directional cast shadow for depth/inertia */}
               <motion.div
+                key={`cast-shadow-${state.transitionKey}`}
                 aria-hidden="true"
                 className="pointer-events-none absolute left-1/2 top-1/2 z-[1] h-[72vh] w-[72vw] -translate-x-1/2 -translate-y-1/2 rounded-[999px]"
                 initial={{
@@ -266,6 +267,7 @@ export function ImageModalProvider({
                   className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
                 >
                   <motion.img
+                    key={`prev-${state.transitionKey}-${prev.src}`}
                     src={prev.src}
                     alt={prev.alt}
                     draggable={false}
@@ -277,7 +279,12 @@ export function ImageModalProvider({
                       objectFit: "contain",
                       filter: "drop-shadow(0 22px 70px rgba(0,0,0,0.55))",
                     }}
-                    initial={false}
+                    initial={{
+                      opacity: 1,
+                      scale: 1,
+                      rotateY: 0,
+                      rotateX: 0,
+                    }}
                     animate={{
                       opacity: 0,
                       scale: 0.985,
@@ -296,6 +303,7 @@ export function ImageModalProvider({
                 className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
               >
                 <motion.img
+                  key={`curr-${state.transitionKey}-${current.src}`}
                   src={current.src}
                   alt={current.alt}
                   draggable={false}
@@ -314,7 +322,12 @@ export function ImageModalProvider({
                     filter:
                       "drop-shadow(0 20px 64px rgba(0,0,0,0.52)) drop-shadow(0 0 14px rgba(120,150,255,0.12))",
                   }}
-                  initial={false}
+                  initial={{
+                    opacity: 0,
+                    scale: 1.015,
+                    rotateY: 0,
+                    rotateX: 0,
+                  }}
                   animate={{
                     opacity: 1,
                     scale: 1,
