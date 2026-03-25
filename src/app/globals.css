@@ -58,7 +58,22 @@ button:focus-visible,
 }
 
 @media (max-width: 639px) {
-  /* Mobile: aucune mise en retrait via hover, et uniformisation gérée côté composant. */
+  /* Mobile: uniformiser largeur/hauteur + couper tout effet transform/hover.
+     On le fait en CSS pour être robuste même si le JS (matchMedia) diffère selon le device. */
+  .gallery-item {
+    width: 90vw !important;
+    max-width: 90vw !important;
+    height: auto !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .gallery-item > img {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+    transform: none !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
