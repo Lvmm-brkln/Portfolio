@@ -43,7 +43,8 @@ export function FixedHeightPhoto({
   const contrast = useMotionValue(1);
   const shadowAlpha = useMotionValue(0);
   const itemIdRef = useRef(`${image.src}|${image.alt}`);
-  const hoverScale = 1.2;
+  // Zoom hover (desktop): ajuster l'intensité sans toucher au mobile.
+  const hoverScale = 1.35;
   const isBabyVibes = image.src.toLowerCase().includes("baby_vibes");
 
   const spring = { type: "spring", stiffness: 340, damping: 28, mass: 0.34 } as const;
@@ -96,7 +97,7 @@ export function FixedHeightPhoto({
           return;
         }
 
-        const effectiveHoverScale = isBabyVibes ? 1.28 : hoverScale;
+        const effectiveHoverScale = isBabyVibes ? 1.42 : hoverScale;
         animate(brightness, 1.06, spring);
         animate(contrast, 1.05, spring);
         animate(shadowAlpha, 0.28, spring);
@@ -156,7 +157,7 @@ export function FixedHeightPhoto({
     const baseShiftY = dy * 0.12;
 
     // Guardrail: keep the scaled image fully inside viewport with a small margin.
-    const effectiveHoverScale = isBabyVibes ? 1.28 : hoverScale;
+    const effectiveHoverScale = isBabyVibes ? 1.42 : hoverScale;
     const extraX = (rect.width * (effectiveHoverScale - 1)) / 2;
     const extraY = (rect.height * (effectiveHoverScale - 1)) / 2;
 

@@ -14,10 +14,8 @@ const navItems: Array<{ href: string; label: string }> = [
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [isCondensed, setIsCondensed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.scrollY > 24;
-  });
+  // Initialiser de façon stable (SSR == client premier rendu) pour éviter les warnings hydration.
+  const [isCondensed, setIsCondensed] = useState(false);
 
   useEffect(() => {
     const condenseAt = 26;
