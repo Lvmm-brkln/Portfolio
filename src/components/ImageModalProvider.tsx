@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useMemo,
   useState,
+  useRef,
 } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { PanInfo } from "framer-motion";
@@ -47,6 +48,8 @@ export function ImageModalProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const preloadedSrcRef = useRef<Set<string>>(new Set());
+
   const [state, setState] = useState<ModalState>({
     open: false,
     images: [],
@@ -61,6 +64,21 @@ export function ImageModalProvider({
       openModal: (images, startIndex) => {
         const len = images.length;
         const clampedIndex = clampIndex(startIndex, len);
+
+        // Preload a small neighborhood around the initial index.
+        // No decode() here: this must never block JS.
+        const radius = 3;
+        for (let offset = -radius; offset <= radius; offset++) {
+          const idx = clampIndex(clampedIndex + offset, len);
+          const src = images[idx]?.src;
+          if (!src) continue;
+          if (preloadedSrcRef.current.has(src)) continue;
+          preloadedSrcRef.current.add(src);
+
+          const img = new window.Image();
+          img.decoding = "async";
+          img.src = src;
+        }
 
         setState({
           open: true,
@@ -85,6 +103,22 @@ export function ImageModalProvider({
       prevIndex: s.index,
       index: (() => {
         const nextIndex = clampIndex(s.index - 1, s.images.length);
+
+        // Preload around the next index to make rapid clicks feel instant.
+        const radius = 3;
+        const len = s.images.length;
+        for (let offset = -radius; offset <= radius; offset++) {
+          const idx = clampIndex(nextIndex + offset, len);
+          const src = s.images[idx]?.src;
+          if (!src) continue;
+          if (preloadedSrcRef.current.has(src)) continue;
+          preloadedSrcRef.current.add(src);
+
+          const img = new window.Image();
+          img.decoding = "async";
+          img.src = src;
+        }
+
         return nextIndex;
       })(),
       transitionKey: s.transitionKey + 1,
@@ -98,6 +132,22 @@ export function ImageModalProvider({
       prevIndex: s.index,
       index: (() => {
         const nextIndex = clampIndex(s.index + 1, s.images.length);
+
+        // Preload around the next index to make rapid clicks feel instant.
+        const radius = 3;
+        const len = s.images.length;
+        for (let offset = -radius; offset <= radius; offset++) {
+          const idx = clampIndex(nextIndex + offset, len);
+          const src = s.images[idx]?.src;
+          if (!src) continue;
+          if (preloadedSrcRef.current.has(src)) continue;
+          preloadedSrcRef.current.add(src);
+
+          const img = new window.Image();
+          img.decoding = "async";
+          img.src = src;
+        }
+
         return nextIndex;
       })(),
       transitionKey: s.transitionKey + 1,
@@ -223,8 +273,21 @@ export function ImageModalProvider({
               }}
             >
               {prev && state.prevIndex !== state.index ? (
-                <div
+                <motion.div
+                  key={`prev-wrap-${state.transitionKey}-${prev.src}`}
                   className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2"
+                  style={{ willChange: "transform, opacity" }}
+                  initial={{
+                    opacity: 1,
+                    x: 0,
+                    scale: 1,
+                  }}
+                  animate={{
+                    opacity: 0,
+                    x: -state.direction * 70,
+                    scale: 0.985,
+                  }}
+                  transition={{ duration: 0.18, ease: [0.2, 0.7, 0.2, 1] }}
                 >
                   <motion.img
                     key={`prev-${state.transitionKey}-${prev.src}`}
@@ -238,15 +301,28 @@ export function ImageModalProvider({
                       maxWidth: "94vw",
                       objectFit: "contain",
                       filter: "drop-shadow(0 22px 70px rgba(0,0,0,0.55))",
-                      opacity: 0,
+                      opacity: 1,
                       transform: "scale(1)",
                     }}
                   />
-                </div>
+                </motion.div>
               ) : null}
 
-              <div
+              <motion.div
+                key={`curr-wrap-${state.transitionKey}-${current.src}`}
                 className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2"
+                style={{ willChange: "transform, opacity" }}
+                initial={{
+                  opacity: 0,
+                  x: state.direction * 70,
+                  scale: 1.015,
+                }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                  scale: 1,
+                }}
+                transition={{ duration: 0.2, ease: [0.2, 0.7, 0.2, 1] }}
               >
                 <motion.img
                   key={`curr-${state.transitionKey}-${current.src}`}
@@ -271,7 +347,7 @@ export function ImageModalProvider({
                     transform: "scale(1)",
                   }}
                 />
-              </div>
+              </motion.div>
             </div>
           </motion.div>
         ) : null}
