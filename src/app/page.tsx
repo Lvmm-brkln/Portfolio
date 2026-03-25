@@ -2,14 +2,13 @@ import { PageEnter } from "@/components/PageEnter";
 import { SeriesBlock } from "@/components/SeriesBlock";
 import { site } from "@/content/site";
 import { getWorkSeries } from "@/server/workSeries";
-import { getOrderedPageSources } from "@/server/orderedPageSources";
 import { ResponsiveOrderedImagePreloader } from "@/components/ResponsiveOrderedImagePreloader";
+import { getOrderedPageSources } from "@/server/orderedPageSources";
 
 export default async function Home() {
   const workSeries = await getWorkSeries();
   const modalImages = workSeries.flatMap((s) => s.images);
   const { desktopSources, mobileSources } = getOrderedPageSources(workSeries);
-  // Preload full page in deterministic order for the active layout only.
 
   return (
     <PageEnter>

@@ -1,8 +1,8 @@
 import { PageEnter } from "@/components/PageEnter";
 import { SeriesBlock } from "@/components/SeriesBlock";
+import { ResponsiveOrderedImagePreloader } from "@/components/ResponsiveOrderedImagePreloader";
 import { getAiSeries } from "@/server/aiSeries";
 import { getOrderedPageSources } from "@/server/orderedPageSources";
-import { ResponsiveOrderedImagePreloader } from "@/components/ResponsiveOrderedImagePreloader";
 
 export default async function AiVisualsPage() {
   const aiSeries = await getAiSeries();
