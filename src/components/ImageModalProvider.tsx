@@ -172,7 +172,7 @@ export function ImageModalProvider({
     <ImageModalContext.Provider value={api}>
       {children}
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="sync">
         {state.open && current ? (
           <motion.div
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 backdrop-blur-md"
@@ -236,27 +236,25 @@ export function ImageModalProvider({
             >
               {/* Directional cast shadow for depth/inertia */}
               <motion.div
-                key={`cast-shadow-${state.transitionKey}`}
                 aria-hidden="true"
                 className="pointer-events-none absolute left-1/2 top-1/2 z-[1] h-[72vh] w-[72vw] -translate-x-1/2 -translate-y-1/2 rounded-[999px]"
                 initial={{
                   x: 0,
                   y: 14,
-                  opacity: 0.32,
-                  filter: "blur(36px)",
-                  scale: 0.98,
+                  opacity: 0.34,
+                  scale: 0.99,
                 }}
                 animate={{
                   x: state.direction > 0 ? -34 : 34,
                   y: 20,
-                  opacity: [0.34, 0.56, 0.36],
-                  filter: ["blur(34px)", "blur(54px)", "blur(38px)"],
-                  scale: [0.98, 1.02, 0.99],
+                  opacity: 0.52,
+                  scale: 1,
                 }}
                 transition={{ duration: 0.24, ease: [0.2, 0.7, 0.2, 1] }}
                 style={{
                   background:
                     "radial-gradient(circle, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.26) 38%, rgba(0,0,0,0.00) 72%)",
+                  filter: "blur(42px)",
                 }}
               />
 
@@ -265,7 +263,6 @@ export function ImageModalProvider({
                   className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
                 >
                   <motion.img
-                    key={`prev-${state.transitionKey}-${prev.src}`}
                     src={prev.src}
                     alt={prev.alt}
                     draggable={false}
@@ -277,19 +274,12 @@ export function ImageModalProvider({
                       objectFit: "contain",
                       filter: "drop-shadow(0 22px 70px rgba(0,0,0,0.55))",
                     }}
-                    initial={{
-                      opacity: 1,
-                      scale: 1,
-                      rotateY: 0,
-                      rotateX: 0,
-                      filter: "blur(0px) saturate(1) contrast(1)",
-                    }}
+                    initial={false}
                     animate={{
                       opacity: 0,
                       scale: 0.985,
                       rotateY: 0,
                       rotateX: 0,
-                      filter: "blur(18px) saturate(1.08) contrast(1.01)",
                     }}
                     transition={{
                       duration: 0.24,
@@ -303,7 +293,6 @@ export function ImageModalProvider({
                 className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
               >
                 <motion.img
-                  key={`curr-${state.transitionKey}-${current.src}`}
                   src={current.src}
                   alt={current.alt}
                   draggable={false}
@@ -322,19 +311,12 @@ export function ImageModalProvider({
                     filter:
                       "drop-shadow(0 20px 64px rgba(0,0,0,0.52)) drop-shadow(0 0 14px rgba(120,150,255,0.12))",
                   }}
-                  initial={{
-                    opacity: 0,
-                    scale: 1.015,
-                    rotateY: 0,
-                    rotateX: 0,
-                    filter: "blur(24px) saturate(1.12) contrast(1.03)",
-                  }}
+                  initial={false}
                   animate={{
                     opacity: 1,
                     scale: 1,
                     rotateY: 0,
                     rotateX: 0,
-                    filter: "blur(0px) saturate(1) contrast(1)",
                   }}
                   transition={{
                     duration: 0.28,
