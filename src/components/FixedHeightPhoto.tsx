@@ -157,7 +157,7 @@ export function FixedHeightPhoto({
     const baseShiftY = dy * 0.12;
 
     // Guardrail: keep the scaled image fully inside viewport with a small margin.
-    const effectiveHoverScale = isBabyVibes ? 1.42 : hoverScale;
+    const effectiveHoverScale = isBabyVibes ? 2 : hoverScale;
     const extraX = (rect.width * (effectiveHoverScale - 1)) / 2;
     const extraY = (rect.height * (effectiveHoverScale - 1)) / 2;
 
