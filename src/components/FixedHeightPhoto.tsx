@@ -26,9 +26,10 @@ export function FixedHeightPhoto({
   const reduceMotion = useReducedMotion();
   const clampValue = heightClamp ?? "clamp(220px, 30vw, 520px)";
   const { openModal } = useImageModal();
-  const [isHovered, setIsHovered] = useState(false);
-  const [isLifted, setIsLifted] = useState(false);
   const [isPortraitOrSquare, setIsPortraitOrSquare] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const scale = useMotionValue(1);
+  const liftZ = useMotionValue(0);
   const [isMobileTemplate, setIsMobileTemplate] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia("(max-width: 639px)").matches;
@@ -37,7 +38,7 @@ export function FixedHeightPhoto({
   const motionY = useMotionValue(0);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const itemIdRef = useRef(`${image.src}|${image.alt}`);
-  const hoverScale = isMobileTemplate ? 1 : 1.2;
+  const hoverScale = 1.2;
   const isBabyVibes = image.src.toLowerCase().includes("baby_vibes");
 
   const spring = { type: "spring", stiffness: 340, damping: 28, mass: 0.34 } as const;
@@ -50,8 +51,8 @@ export function FixedHeightPhoto({
 
       // Hard stop: on mobile template we don't want hover lift/drift/scale.
       if (isMobile) {
-        setIsHovered(false);
-        setIsLifted(false);
+        liftZ.set(0);
+        scale.set(1);
         motionX.set(0);
         motionY.set(0);
       }
@@ -80,8 +81,8 @@ export function FixedHeightPhoto({
           clearTimeout(settleTimerRef.current);
           settleTimerRef.current = null;
         }
-        setIsHovered(false);
-        setIsLifted(false);
+        liftZ.set(0);
+        scale.set(1);
         motionX.set(0);
         motionY.set(0);
       }
@@ -146,14 +147,15 @@ export function FixedHeightPhoto({
       clearTimeout(settleTimerRef.current);
       settleTimerRef.current = null;
     }
-    setIsHovered(true);
-    setIsLifted(true);
+    liftZ.set(26);
     const { shiftX, shiftY } = updateCenterShift(target) ?? { shiftX: 0, shiftY: 0 };
     if (reduceMotion) {
       motionX.set(shiftX);
       motionY.set(shiftY);
+      scale.set(1);
       return;
     }
+    animate(scale, hoverScale, spring);
     animate(motionX, shiftX, spring);
     animate(motionY, shiftY, spring);
   };
@@ -165,19 +167,20 @@ export function FixedHeightPhoto({
         detail: { id: null },
       })
     );
-    setIsHovered(false);
     if (reduceMotion) {
       motionX.set(0);
       motionY.set(0);
+      scale.set(1);
     } else {
       animate(motionX, 0, spring);
       animate(motionY, 0, spring);
+      animate(scale, 1, spring);
     }
     if (settleTimerRef.current) {
       clearTimeout(settleTimerRef.current);
     }
     settleTimerRef.current = setTimeout(() => {
-      setIsLifted(false);
+      liftZ.set(0);
       settleTimerRef.current = null;
     }, 340);
   };
@@ -212,21 +215,17 @@ export function FixedHeightPhoto({
 
   return (
     <motion.div
+      ref={rootRef}
       initial={false}
-      animate={
-        reduceMotion || isMobileTemplate ? { scale: 1 } : { scale: isHovered ? hoverScale : 1 }
-      }
-      transition={
-        reduceMotion || isMobileTemplate ? { duration: 0.01 } : spring
-      }
       style={{
         willChange: reduceMotion ? undefined : "transform",
         height: isMobileTemplate ? "auto" : clampValue,
-        zIndex: isLifted ? 26 : 0,
         width: isMobileTemplate ? "90vw" : undefined,
         maxWidth: isMobileTemplate ? "100%" : undefined,
         x: motionX,
         y: motionY,
+        scale,
+        zIndex: liftZ,
       }}
       className={[
         "group/photo gallery-item",
