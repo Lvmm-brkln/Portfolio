@@ -307,27 +307,6 @@ export function ImageModalProvider({
                   transformStyle: "preserve-3d",
                 }}
               >
-              {/* Cast shadow premium (gradient-only, no blur/filter) */}
-              <div className="pointer-events-none absolute left-1/2 top-1/2 z-[1] h-[72vh] w-[72vw] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[999px]">
-                <motion.div
-                  key={`cast-${state.transitionKey}`}
-                  aria-hidden="true"
-                  initial={{ opacity: 0, scale: 0.99 }}
-                  animate={{ opacity: 0.9, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.99 }}
-                  transition={{
-                    duration: 0.45,
-                    ease: [0.2, 0.7, 0.2, 1],
-                  }}
-                  style={{
-                    height: "100%",
-                    width: "100%",
-                    background:
-                      "radial-gradient(circle, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.30) 35%, rgba(0,0,0,0) 70%)",
-                  }}
-                />
-              </div>
-
               {/* Wipe / shutter reveal (very subtle, no blur/filter) */}
               <div className="pointer-events-none absolute left-1/2 top-0 z-[3] h-full w-[44%] -translate-x-1/2 overflow-hidden">
                 <motion.div
