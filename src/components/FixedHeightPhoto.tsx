@@ -30,10 +30,7 @@ export function FixedHeightPhoto({
   const rootRef = useRef<HTMLDivElement | null>(null);
   const scale = useMotionValue(1);
   const liftZ = useMotionValue(0);
-  const [isMobileTemplate, setIsMobileTemplate] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(max-width: 639px)").matches;
-  });
+  const isMobileTemplateRef = useRef(false);
   const motionX = useMotionValue(0);
   const motionY = useMotionValue(0);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -46,16 +43,7 @@ export function FixedHeightPhoto({
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 639px)");
     const update = () => {
-      const isMobile = mq.matches;
-      setIsMobileTemplate(isMobile);
-
-      // Hard stop: on mobile template we don't want hover lift/drift/scale.
-      if (isMobile) {
-        liftZ.set(0);
-        scale.set(1);
-        motionX.set(0);
-        motionY.set(0);
-      }
+      isMobileTemplateRef.current = mq.matches;
     };
 
     update();
@@ -67,9 +55,6 @@ export function FixedHeightPhoto({
     // Safari fallback (older browsers)
     mq.addListener(update);
     return () => mq.removeListener(update);
-    // `motionX`/`motionY` viennent de `useMotionValue` (stables) : on fige volontairement les deps
-    // pour éviter un warning React dev lié à la taille des deps lors des refresh.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -100,7 +85,7 @@ export function FixedHeightPhoto({
   }, []);
 
   const updateCenterShift = (target: EventTarget | null) => {
-    if (reduceMotion || isMobileTemplate) return { shiftX: 0, shiftY: 0 };
+    if (reduceMotion || isMobileTemplateRef.current) return { shiftX: 0, shiftY: 0 };
     const el = target as HTMLDivElement | null;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -137,7 +122,7 @@ export function FixedHeightPhoto({
   };
 
   const handlePointerEnter = (target: EventTarget | null) => {
-    if (isMobileTemplate) return;
+    if (isMobileTemplateRef.current) return;
     window.dispatchEvent(
       new CustomEvent<{ id: string | null }>(hoverEventName, {
         detail: { id: itemIdRef.current },
@@ -161,7 +146,7 @@ export function FixedHeightPhoto({
   };
 
   const handlePointerLeave = () => {
-    if (isMobileTemplate) return;
+    if (isMobileTemplateRef.current) return;
     window.dispatchEvent(
       new CustomEvent<{ id: string | null }>(hoverEventName, {
         detail: { id: null },
@@ -205,13 +190,12 @@ export function FixedHeightPhoto({
   };
 
   const imageTransform = (() => {
-    if (isMobileTemplate) return undefined;
     if (isBabyVibes) return "scale(1.2) translateY(-12px)";
     return undefined;
   })();
 
-  const shouldApplyHoverFx = !isMobileTemplate;
-  const shouldApplyPortraitBoost = !isMobileTemplate && isPortraitOrSquare;
+  const shouldApplyHoverFx = true;
+  const shouldApplyPortraitBoost = isPortraitOrSquare;
 
   return (
     <motion.div
@@ -219,9 +203,7 @@ export function FixedHeightPhoto({
       initial={false}
       style={{
         willChange: reduceMotion ? undefined : "transform",
-        height: isMobileTemplate ? "auto" : clampValue,
-        width: isMobileTemplate ? "90vw" : undefined,
-        maxWidth: isMobileTemplate ? "100%" : undefined,
+        height: clampValue,
         x: motionX,
         y: motionY,
         scale,
@@ -262,9 +244,9 @@ export function FixedHeightPhoto({
         alt={image.alt}
         // Même hauteur pour toutes, formats conservés.
         style={{
-          height: isMobileTemplate ? "auto" : "100%",
-          width: isMobileTemplate ? "100%" : "auto",
-          objectFit: isMobileTemplate ? "contain" : undefined,
+          height: "100%",
+          width: "auto",
+          objectFit: undefined,
           display: "block",
           transform: imageTransform,
           transformOrigin: "center center",
