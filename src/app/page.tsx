@@ -1,6 +1,6 @@
 import { PageEnter } from "@/components/PageEnter";
 import { SeriesBlock } from "@/components/SeriesBlock";
-import { OrderedImagePreloader } from "@/components/OrderedImagePreloader";
+import OrderedImagePreloader from "@/components/OrderedImagePreloader";
 import { site } from "@/content/site";
 import { getWorkSeries } from "@/server/workSeries";
 

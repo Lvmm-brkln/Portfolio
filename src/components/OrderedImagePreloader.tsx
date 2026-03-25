@@ -71,3 +71,7 @@ export function OrderedImagePreloader({
   return null;
 }
 
+// Keep a default export as well, because Next's RSC/static analysis is stricter
+// when importing client components from async server components.
+export default OrderedImagePreloader;
+

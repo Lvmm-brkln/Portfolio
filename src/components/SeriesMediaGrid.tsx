@@ -86,14 +86,16 @@ export function SeriesMediaGrid({
 
       <div className="hidden space-y-4 sm:block sm:space-y-6">
       {rows.map((row, rowIdx) => {
-        const key = row.map((img) => img.src).join("|");
+        const joined =
+          row.map((img) => img.src).filter((src) => Boolean(src)).join("|");
+        const rowKey = joined || `row-${rowIdx}-${row.length}`;
 
         return (
-          <div key={key} className="flex w-full justify-center">
+          <div key={rowKey} className="flex w-full justify-center">
             <div className="group/row flex flex-col items-stretch justify-center gap-2.5 sm:flex-row sm:gap-[18px]">
-              {row.map((image) => (
+              {row.map((image, imgIdx) => (
                 <FixedHeightPhoto
-                  key={image.src + image.alt}
+                  key={`${image.src || "x"}|${image.alt || "x"}|${rowIdx}|${imgIdx}`}
                   image={image}
                   heightClamp={heightClamp}
                   modalImages={modalList}

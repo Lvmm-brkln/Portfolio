@@ -213,67 +213,94 @@ export function ImageModalProvider({
 
       <AnimatePresence mode="sync">
         {state.open && current ? (
-          <motion.div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => api.closeModal()}
-            transition={{ duration: 0.2, ease: [0.2, 0.7, 0.2, 1] }}
-          >
-            <button
-              type="button"
-              aria-label="Close modal"
-              className="pointer-events-auto absolute right-4 top-4 z-20 rounded-full bg-white/10 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-white/15 sm:right-6 sm:top-6"
-              style={{
-                top: "max(1rem, env(safe-area-inset-top))",
-                right: "max(1rem, env(safe-area-inset-right))",
+          <>
+            <motion.div
+              className="fixed inset-0 z-[100] bg-black/65"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => api.closeModal()}
+              transition={{
+                duration: 0.2,
+                ease: [0.2, 0.7, 0.2, 1],
               }}
-              onClick={(e) => {
-                e.stopPropagation();
-                api.closeModal();
-              }}
-            >
-              Close
-            </button>
+            />
 
-            <button
-              type="button"
-              aria-label="Previous image"
-              className="pointer-events-auto absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/15 sm:left-6 sm:p-3.5"
-              style={{
-                left: "max(0.5rem, env(safe-area-inset-left))",
+            <motion.div
+              className="pointer-events-none fixed inset-0 z-[101] flex items-center justify-center overflow-hidden"
+              initial={{
+                opacity: 0,
+                x: slidePx * 0.08,
+                scale: 0.99,
               }}
-              onClick={(e) => {
-                e.stopPropagation();
-                goPrev();
+              animate={{
+                opacity: 1,
+                x: 0,
+                scale: 1,
+              }}
+              exit={{
+                opacity: 0,
+                x: slidePx * 0.04,
+                scale: 0.99,
+              }}
+              transition={{
+                duration: 0.25,
+                ease: [0.2, 0.7, 0.2, 1],
               }}
             >
-              ←
-            </button>
+              <button
+                type="button"
+                aria-label="Close modal"
+                className="pointer-events-auto absolute right-4 top-4 z-20 rounded-full bg-white/10 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-white/15 sm:right-6 sm:top-6"
+                style={{
+                  top: "max(1rem, env(safe-area-inset-top))",
+                  right: "max(1rem, env(safe-area-inset-right))",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  api.closeModal();
+                }}
+              >
+                Close
+              </button>
 
-            <button
-              type="button"
-              aria-label="Next image"
-              className="pointer-events-auto absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/15 sm:right-6 sm:p-3.5"
-              style={{
-                right: "max(0.5rem, env(safe-area-inset-right))",
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                goNext();
-              }}
-            >
-              →
-            </button>
+              <button
+                type="button"
+                aria-label="Previous image"
+                className="pointer-events-auto absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/15 sm:left-6 sm:p-3.5"
+                style={{
+                  left: "max(0.5rem, env(safe-area-inset-left))",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goPrev();
+                }}
+              >
+                ←
+              </button>
 
-            <div
-              className="pointer-events-none relative flex h-full w-full items-center justify-center overflow-hidden"
-              style={{
-                perspective: 1200,
-                transformStyle: "preserve-3d",
-              }}
-            >
+              <button
+                type="button"
+                aria-label="Next image"
+                className="pointer-events-auto absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/15 sm:right-6 sm:p-3.5"
+                style={{
+                  right: "max(0.5rem, env(safe-area-inset-right))",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goNext();
+                }}
+              >
+                →
+              </button>
+
+              <div
+                className="pointer-events-none relative flex h-full w-full items-center justify-center overflow-hidden"
+                style={{
+                  perspective: 1200,
+                  transformStyle: "preserve-3d",
+                }}
+              >
               {/* Cast shadow premium (gradient-only, no blur/filter) */}
               <div className="pointer-events-none absolute left-1/2 top-1/2 z-[1] h-[72vh] w-[72vw] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[999px]">
                 <motion.div
@@ -415,7 +442,8 @@ export function ImageModalProvider({
                 </div>
               </AnimatePresence>
             </div>
-          </motion.div>
+            </motion.div>
+          </>
         ) : null}
       </AnimatePresence>
     </ImageModalContext.Provider>
