@@ -116,6 +116,7 @@ export function SeriesMediaGrid({
                 modalImages={modalList}
                 eager={Boolean(idx < 4 && prioritize)}
                 modalIndex={indexByKey.get(`${image.src}|${image.alt}`) ?? 0}
+                registrySlot="mobile"
               />
             </div>
           ))}
@@ -144,6 +145,7 @@ export function SeriesMediaGrid({
                       modalIndex={
                         indexByKey.get(`${image.src}|${image.alt}`) ?? 0
                       }
+                      registrySlot="desktop"
                     />
                   ))}
                 </div>

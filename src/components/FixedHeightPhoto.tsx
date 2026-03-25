@@ -7,7 +7,7 @@ import {
   useMotionValue,
   useReducedMotion,
 } from "framer-motion";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { PortfolioImage } from "@/content/portfolio";
 import { useImageModal } from "@/components/ImageModalProvider";
@@ -19,13 +19,16 @@ export function FixedHeightPhoto({
   modalImages,
   modalIndex,
   eager,
+  /** Must differ between mobile and desktop trees so hover registry keys never collide. */
+  registrySlot,
 }: {
   image: PortfolioImage;
-  heightClamp?: string;
+  // Hauteur responsive conservant une même hauteur pour toutes les images d'une série.
+  heightClamp?: string; // CSS clamp(), ex: "clamp(220px, 30vw, 520px)"
   modalImages?: PortfolioImage[];
   modalIndex?: number;
-  /** Above-the-fold tiles: eager + high fetch priority. */
   eager?: boolean;
+  registrySlot: "mobile" | "desktop";
 }) {
   const reduceMotion = useReducedMotion();
   const clampValue = heightClamp ?? "clamp(220px, 30vw, 520px)";
@@ -42,11 +45,10 @@ export function FixedHeightPhoto({
   const brightness = useMotionValue(1);
   const contrast = useMotionValue(1);
   const shadowAlpha = useMotionValue(0);
-  const itemIdRef = useRef(`${image.src}|${image.alt}`);
-  // One-shot reveal: never use native `loading="lazy"` here — browsers may re-run the lazy
-  // pipeline when nodes move in/out of the viewport on fast scroll. Once `src` mounts, it
-  // stays mounted for the lifetime of this component.
-  const [srcInDom, setSrcInDom] = useState(() => Boolean(eager));
+  const registryId = useMemo(
+    () => `${image.src}|${image.alt}|${registrySlot}`,
+    [image.src, image.alt, registrySlot]
+  );
   // Zoom hover (desktop): ajuster l'intensité sans toucher au mobile.
   const hoverScale = 1.35;
   const isBabyVibes = image.src.toLowerCase().includes("baby_vibes");
@@ -54,10 +56,6 @@ export function FixedHeightPhoto({
   const spring = { type: "spring", stiffness: 340, damping: 28, mass: 0.34 } as const;
 
   const filter = useMotionTemplate`brightness(${brightness}) contrast(${contrast}) drop-shadow(0 18px 42px rgba(0,0,0,${shadowAlpha}))`;
-
-  useEffect(() => {
-    if (eager) setSrcInDom(true);
-  }, [eager]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 639px)");
@@ -76,30 +74,6 @@ export function FixedHeightPhoto({
     return () => mq.removeListener(update);
   }, []);
 
-  useLayoutEffect(() => {
-    if (srcInDom) return;
-    const node = rootRef.current;
-    if (!node) return;
-
-    const marginY = Math.min(640, Math.round(window.innerHeight * 0.65));
-    const rootMargin = `${marginY}px 0px ${marginY}px 0px`;
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting && entry.target === node) {
-            setSrcInDom(true);
-            io.disconnect();
-            return;
-          }
-        }
-      },
-      { root: null, rootMargin, threshold: 0 },
-    );
-    io.observe(node);
-    return () => io.disconnect();
-  }, [srcInDom]);
-
   useEffect(() => {
     const computeHeaderHeight = () => {
       const headerEl = document.querySelector("header");
@@ -113,7 +87,7 @@ export function FixedHeightPhoto({
   }, []);
 
   useEffect(() => {
-    const id = `${image.src}|${image.alt}`;
+    const id = registryId;
     const dimTransition = { duration: 0.18, ease: [0.2, 0.7, 0.2, 1] as const };
 
     galleryHoverRegistry.register(id, {
@@ -165,7 +139,7 @@ export function FixedHeightPhoto({
       galleryHoverRegistry.unregister(id);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [image.src, image.alt, reduceMotion]);
+  }, [registryId, reduceMotion]);
 
   const updateCenterShift = (target: EventTarget | null) => {
     if (reduceMotion || isMobileTemplateRef.current) return { shiftX: 0, shiftY: 0 };
@@ -214,12 +188,12 @@ export function FixedHeightPhoto({
       shiftY: 0,
     };
 
-    galleryHoverRegistry.setActive(itemIdRef.current, { shiftX, shiftY });
+    galleryHoverRegistry.setActive(registryId, { shiftX, shiftY });
   };
 
   const handlePointerLeave = () => {
     if (isMobileTemplateRef.current) return;
-    galleryHoverRegistry.clearActiveIfMatches(itemIdRef.current);
+    galleryHoverRegistry.clearActiveIfMatches(registryId);
   };
 
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -283,32 +257,25 @@ export function FixedHeightPhoto({
         }
       }}
     >
-      {srcInDom ? (
-        <motion.img
-          src={image.src}
-          alt={image.alt}
-          style={{
-            height: "100%",
-            width: "auto",
-            objectFit: undefined,
-            display: "block",
-            filter,
-          }}
-          className={[
-            shouldApplyPortraitBoost ? "portrait-mobile-boost-img" : "",
-          ].join(" ")}
-          loading="eager"
-          fetchPriority={eager ? "high" : "auto"}
-          draggable={false}
-          onLoad={handleImageLoad}
-        />
-      ) : (
-        <div
-          className="h-full shrink-0 bg-foreground/[0.04]"
-          style={{ aspectRatio: "4 / 3" }}
-          aria-hidden
-        />
-      )}
+      <motion.img
+        src={image.src}
+        alt={image.alt}
+        // Même hauteur pour toutes, formats conservés.
+        style={{
+          height: "100%",
+          width: "auto",
+          objectFit: undefined,
+          display: "block",
+          filter,
+        }}
+        className={[
+          shouldApplyPortraitBoost ? "portrait-mobile-boost-img" : "",
+        ].join(" ")}
+        loading={eager ? "eager" : "lazy"}
+        fetchPriority={eager ? "high" : "auto"}
+        draggable={false}
+        onLoad={handleImageLoad}
+      />
     </motion.div>
   );
 }
