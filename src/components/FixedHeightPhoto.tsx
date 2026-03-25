@@ -7,7 +7,7 @@ import {
   useMotionValue,
   useReducedMotion,
 } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import type { PortfolioImage } from "@/content/portfolio";
 import { useImageModal } from "@/components/ImageModalProvider";
@@ -21,10 +21,10 @@ export function FixedHeightPhoto({
   eager,
 }: {
   image: PortfolioImage;
-  // Hauteur responsive conservant une même hauteur pour toutes les images d'une série.
-  heightClamp?: string; // CSS clamp(), ex: "clamp(220px, 30vw, 520px)"
+  heightClamp?: string;
   modalImages?: PortfolioImage[];
   modalIndex?: number;
+  /** Above-the-fold tiles: eager + high fetch priority. */
   eager?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
@@ -43,6 +43,10 @@ export function FixedHeightPhoto({
   const contrast = useMotionValue(1);
   const shadowAlpha = useMotionValue(0);
   const itemIdRef = useRef(`${image.src}|${image.alt}`);
+  // One-shot reveal: never use native `loading="lazy"` here — browsers may re-run the lazy
+  // pipeline when nodes move in/out of the viewport on fast scroll. Once `src` mounts, it
+  // stays mounted for the lifetime of this component.
+  const [srcInDom, setSrcInDom] = useState(() => Boolean(eager));
   // Zoom hover (desktop): ajuster l'intensité sans toucher au mobile.
   const hoverScale = 1.35;
   const isBabyVibes = image.src.toLowerCase().includes("baby_vibes");
@@ -50,6 +54,10 @@ export function FixedHeightPhoto({
   const spring = { type: "spring", stiffness: 340, damping: 28, mass: 0.34 } as const;
 
   const filter = useMotionTemplate`brightness(${brightness}) contrast(${contrast}) drop-shadow(0 18px 42px rgba(0,0,0,${shadowAlpha}))`;
+
+  useEffect(() => {
+    if (eager) setSrcInDom(true);
+  }, [eager]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 639px)");
@@ -67,6 +75,30 @@ export function FixedHeightPhoto({
     mq.addListener(update);
     return () => mq.removeListener(update);
   }, []);
+
+  useLayoutEffect(() => {
+    if (srcInDom) return;
+    const node = rootRef.current;
+    if (!node) return;
+
+    const marginY = Math.min(640, Math.round(window.innerHeight * 0.65));
+    const rootMargin = `${marginY}px 0px ${marginY}px 0px`;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.target === node) {
+            setSrcInDom(true);
+            io.disconnect();
+            return;
+          }
+        }
+      },
+      { root: null, rootMargin, threshold: 0 },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [srcInDom]);
 
   useEffect(() => {
     const computeHeaderHeight = () => {
@@ -251,26 +283,32 @@ export function FixedHeightPhoto({
         }
       }}
     >
-      <motion.img
-        src={image.src}
-        alt={image.alt}
-        // Même hauteur pour toutes, formats conservés.
-        style={{
-          height: "100%",
-          width: "auto",
-          objectFit: undefined,
-          display: "block",
-          filter,
-        }}
-        className={[
-          shouldApplyPortraitBoost ? "portrait-mobile-boost-img" : "",
-        ].join(" ")}
-        loading={eager ? "eager" : "lazy"}
-        fetchPriority={eager ? "high" : "auto"}
-        decoding="async"
-        draggable={false}
-        onLoad={handleImageLoad}
-      />
+      {srcInDom ? (
+        <motion.img
+          src={image.src}
+          alt={image.alt}
+          style={{
+            height: "100%",
+            width: "auto",
+            objectFit: undefined,
+            display: "block",
+            filter,
+          }}
+          className={[
+            shouldApplyPortraitBoost ? "portrait-mobile-boost-img" : "",
+          ].join(" ")}
+          loading="eager"
+          fetchPriority={eager ? "high" : "auto"}
+          draggable={false}
+          onLoad={handleImageLoad}
+        />
+      ) : (
+        <div
+          className="h-full shrink-0 bg-foreground/[0.04]"
+          style={{ aspectRatio: "4 / 3" }}
+          aria-hidden
+        />
+      )}
     </motion.div>
   );
 }
