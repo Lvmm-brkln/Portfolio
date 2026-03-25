@@ -52,8 +52,15 @@ const AI_MANIFEST: AiManifestEntry[] = [
   },
 ];
 
+const AI_MOBILE_OVERRIDES: Record<string, { mobileOrder: number[] }> = {
+  ChatMurai: { mobileOrder: [1, 2, 3, 4, 5] },
+  "Panda Cool": { mobileOrder: [1, 2, 3, 4, 5] },
+  "Classic tatoo": { mobileOrder: [1, 2, 4, 3, 5] },
+};
+
 export async function getAiSeries(): Promise<WorkSeries[]> {
   return AI_MANIFEST.map((entry) => {
+    const overrides = AI_MOBILE_OVERRIDES[entry.id];
     const images: PortfolioImage[] = entry.files.map((fileName, idx) => ({
       src: `/images/${encodeURIComponent(entry.id)}/${encodeURIComponent(fileName)}`,
       alt: `${entry.id} image ${idx + 1}`,
@@ -65,6 +72,7 @@ export async function getAiSeries(): Promise<WorkSeries[]> {
       descriptor: `${entry.files.length} images`,
       rowSizes: entry.rowSizes,
       images,
+      mobileOrder: overrides?.mobileOrder,
     };
   });
 }

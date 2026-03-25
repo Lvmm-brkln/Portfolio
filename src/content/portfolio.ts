@@ -11,6 +11,9 @@ export type WorkSeries = {
   rowSizes?: number[]; // e.g. [3,2] or [2,3] for 5 images
   // Optional mobile-specific order using 1-based indices.
   mobileOrder?: number[];
+  // Optional mobile-specific hide list using old 1-based indices (desktop untouched).
+  // Useful when we want to "remove" some photos from the mobile feed (not just reorder).
+  mobileHideIndices?: number[];
   images: PortfolioImage[];
 };
 

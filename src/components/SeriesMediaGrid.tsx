@@ -5,12 +5,14 @@ export function SeriesMediaGrid({
   images,
   rowSizes,
   mobileOrder,
+  mobileHideIndices,
   modalImages,
   prioritize,
 }: {
   images: PortfolioImage[];
   rowSizes?: number[];
   mobileOrder?: number[];
+  mobileHideIndices?: number[];
   modalImages?: PortfolioImage[];
   prioritize?: boolean;
 }) {
@@ -18,13 +20,24 @@ export function SeriesMediaGrid({
 
   const indexByKey = new Map(modalList.map((img, i) => [`${img.src}|${img.alt}`, i]));
   const mobileImages = (() => {
-    if (!mobileOrder || mobileOrder.length === 0) return images;
-    const oneBased = mobileOrder
-      .map((n) => images[n - 1])
+    const original = images.map((img, i) => ({ img, oldIndex: i + 1 }));
+
+    const hideSet = new Set<number>((mobileHideIndices ?? []).filter((n) => Number.isFinite(n)));
+    const visible = original.filter(({ oldIndex }) => !hideSet.has(oldIndex));
+
+    if (!mobileOrder || mobileOrder.length === 0) return visible.map((v) => v.img);
+
+    // Strict mobile order: `mobileOrder` is expressed in old 1-based indices.
+    const ordered = mobileOrder
+      .map((oldIndex) => visible.find((v) => v.oldIndex === oldIndex)?.img)
       .filter((img): img is PortfolioImage => Boolean(img));
-    if (oneBased.length === images.length) return oneBased;
-    const used = new Set(oneBased.map((img) => img.src));
-    return [...oneBased, ...images.filter((img) => !used.has(img.src))];
+
+    // If order list is incomplete, append remaining visible images (safety).
+    if (ordered.length === visible.length) return ordered;
+
+    const used = new Set(ordered.map((img) => img.src));
+    const remaining = visible.map((v) => v.img).filter((img) => !used.has(img.src));
+    return [...ordered, ...remaining];
   })();
 
   const rows = (() => {

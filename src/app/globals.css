@@ -47,8 +47,10 @@ button:focus-visible,
   outline-offset: 2px;
 }
 
-.gallery-scope:has(.gallery-item:hover) .gallery-item:not(:hover) {
-  opacity: 0.38;
+@media (min-width: 640px) {
+  .gallery-scope:has(.gallery-item:hover) .gallery-item:not(:hover) {
+    opacity: 0.38;
+  }
 }
 
 .gallery-item {
@@ -56,18 +58,7 @@ button:focus-visible,
 }
 
 @media (max-width: 639px) {
-  .portrait-mobile-boost {
-    width: 74vw;
-    min-width: 74vw;
-    height: auto !important;
-  }
-
-  .portrait-mobile-boost .portrait-mobile-boost-img {
-    width: 100% !important;
-    height: auto !important;
-    object-fit: contain;
-    transform: none !important;
-  }
+  /* Mobile: aucune mise en retrait via hover, et uniformisation gérée côté composant. */
 }
 
 @media (prefers-reduced-motion: reduce) {

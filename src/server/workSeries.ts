@@ -42,8 +42,31 @@ const WORK_MANIFEST: WorkManifestEntry[] = [
   { id: "Boat", rowSizes: [3, 2], files: ["Boat 4.jpg", "Boat 2.jpg", "Boat 5.jpg", "Boat 1.jpg", "Boat 3.jpg"] },
 ];
 
+const WORK_MOBILE_OVERRIDES: Record<
+  string,
+  { mobileOrder: number[]; mobileHideIndices?: number[] }
+> = {
+  Dappking: { mobileOrder: [2, 3, 1] },
+  Casino: { mobileOrder: [3, 1, 2] },
+  Edito: { mobileOrder: [1, 3, 2] },
+  LNQL: { mobileOrder: [1, 4, 3, 2, 5] },
+  Jimmy: { mobileOrder: [2, 1, 3] },
+  Duke: { mobileOrder: [2, 4, 5, 3, 1] },
+  Random: { mobileOrder: [1, 2] },
+  Perdition: { mobileOrder: [1, 2, 3, 4, 5, 6] },
+  Mechanhumanimal: { mobileOrder: [2, 3, 1] },
+  Tree: { mobileOrder: [1] },
+  SF: { mobileOrder: [2, 1, 3] },
+  Alcatraz: { mobileOrder: [3, 2, 1] },
+  Boat: {
+    mobileOrder: [3, 1, 2],
+    mobileHideIndices: [4, 5], // hide old #4 and #5 only on mobile feed
+  },
+};
+
 export async function getWorkSeries(): Promise<WorkSeries[]> {
   const series: WorkSeries[] = WORK_MANIFEST.map((entry) => {
+    const overrides = WORK_MOBILE_OVERRIDES[entry.id];
     const images: PortfolioImage[] = entry.files.map((fileRef, idx) => {
       if (typeof fileRef === "string") {
         return {
@@ -64,6 +87,8 @@ export async function getWorkSeries(): Promise<WorkSeries[]> {
       descriptor: `${entry.files.length} images`,
       rowSizes: entry.rowSizes,
       images,
+      mobileOrder: overrides?.mobileOrder,
+      mobileHideIndices: overrides?.mobileHideIndices,
     };
   });
 

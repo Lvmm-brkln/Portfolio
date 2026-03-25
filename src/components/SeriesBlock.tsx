@@ -30,6 +30,7 @@ export function SeriesBlock({
         images={series.images}
         rowSizes={series.rowSizes}
         mobileOrder={series.mobileOrder}
+        mobileHideIndices={series.mobileHideIndices}
         modalImages={modalImages}
         prioritize={prioritize}
       />

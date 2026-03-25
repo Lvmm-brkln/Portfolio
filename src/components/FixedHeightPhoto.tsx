@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { motion, useReducedMotion } from "framer-motion";
+import { animate, motion, useMotionValue, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 import type { PortfolioImage } from "@/content/portfolio";
@@ -26,14 +26,50 @@ export function FixedHeightPhoto({
   const reduceMotion = useReducedMotion();
   const clampValue = heightClamp ?? "clamp(220px, 30vw, 520px)";
   const { openModal } = useImageModal();
-  const [centerShift, setCenterShift] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const [isLifted, setIsLifted] = useState(false);
   const [isPortraitOrSquare, setIsPortraitOrSquare] = useState(false);
+  const [isMobileTemplate, setIsMobileTemplate] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 639px)").matches;
+  });
+  const motionX = useMotionValue(0);
+  const motionY = useMotionValue(0);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const itemIdRef = useRef(`${image.src}|${image.alt}`);
-  const hoverScale = 1.2;
+  const hoverScale = isMobileTemplate ? 1 : 1.2;
   const isBabyVibes = image.src.toLowerCase().includes("baby_vibes");
+
+  const spring = { type: "spring", stiffness: 340, damping: 28, mass: 0.34 } as const;
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const update = () => {
+      const isMobile = mq.matches;
+      setIsMobileTemplate(isMobile);
+
+      // Hard stop: on mobile template we don't want hover lift/drift/scale.
+      if (isMobile) {
+        setIsHovered(false);
+        setIsLifted(false);
+        motionX.set(0);
+        motionY.set(0);
+      }
+    };
+
+    update();
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", update);
+      return () => mq.removeEventListener("change", update);
+    }
+
+    // Safari fallback (older browsers)
+    mq.addListener(update);
+    return () => mq.removeListener(update);
+    // `motionX`/`motionY` viennent de `useMotionValue` (stables) : on fige volontairement les deps
+    // pour éviter un warning React dev lié à la taille des deps lors des refresh.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const onHoverChange = (event: Event) => {
@@ -46,7 +82,8 @@ export function FixedHeightPhoto({
         }
         setIsHovered(false);
         setIsLifted(false);
-        setCenterShift({ x: 0, y: 0 });
+        motionX.set(0);
+        motionY.set(0);
       }
     };
 
@@ -58,10 +95,11 @@ export function FixedHeightPhoto({
         clearTimeout(settleTimerRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateCenterShift = (target: EventTarget | null) => {
-    if (reduceMotion) return;
+    if (reduceMotion || isMobileTemplate) return { shiftX: 0, shiftY: 0 };
     const el = target as HTMLDivElement | null;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -93,15 +131,12 @@ export function FixedHeightPhoto({
 
     const shiftX = Math.max(minShiftX, Math.min(maxShiftX, baseShiftX));
     const shiftY = Math.max(minShiftY, Math.min(maxShiftY, baseShiftY));
-    setCenterShift({ x: shiftX, y: shiftY });
+    return { shiftX, shiftY };
 
-  };
-
-  const resetCenterShift = () => {
-    setCenterShift({ x: 0, y: 0 });
   };
 
   const handlePointerEnter = (target: EventTarget | null) => {
+    if (isMobileTemplate) return;
     window.dispatchEvent(
       new CustomEvent<{ id: string | null }>(hoverEventName, {
         detail: { id: itemIdRef.current },
@@ -113,17 +148,31 @@ export function FixedHeightPhoto({
     }
     setIsHovered(true);
     setIsLifted(true);
-    updateCenterShift(target);
+    const { shiftX, shiftY } = updateCenterShift(target) ?? { shiftX: 0, shiftY: 0 };
+    if (reduceMotion) {
+      motionX.set(shiftX);
+      motionY.set(shiftY);
+      return;
+    }
+    animate(motionX, shiftX, spring);
+    animate(motionY, shiftY, spring);
   };
 
   const handlePointerLeave = () => {
+    if (isMobileTemplate) return;
     window.dispatchEvent(
       new CustomEvent<{ id: string | null }>(hoverEventName, {
         detail: { id: null },
       })
     );
     setIsHovered(false);
-    resetCenterShift();
+    if (reduceMotion) {
+      motionX.set(0);
+      motionY.set(0);
+    } else {
+      animate(motionX, 0, spring);
+      animate(motionY, 0, spring);
+    }
     if (settleTimerRef.current) {
       clearTimeout(settleTimerRef.current);
     }
@@ -153,40 +202,43 @@ export function FixedHeightPhoto({
   };
 
   const imageTransform = (() => {
+    if (isMobileTemplate) return undefined;
     if (isBabyVibes) return "scale(1.2) translateY(-12px)";
     return undefined;
   })();
+
+  const shouldApplyHoverFx = !isMobileTemplate;
+  const shouldApplyPortraitBoost = !isMobileTemplate && isPortraitOrSquare;
 
   return (
     <motion.div
       initial={false}
       animate={
-        reduceMotion
-          ? { scale: 1, x: 0, y: 0 }
-          : {
-              scale: isHovered ? hoverScale : 1,
-              x: centerShift.x,
-              y: centerShift.y,
-            }
+        reduceMotion || isMobileTemplate ? { scale: 1 } : { scale: isHovered ? hoverScale : 1 }
       }
       transition={
-        reduceMotion
-          ? { duration: 0.01 }
-          : { type: "spring", stiffness: 340, damping: 28, mass: 0.34 }
+        reduceMotion || isMobileTemplate ? { duration: 0.01 } : spring
       }
       style={{
         willChange: reduceMotion ? undefined : "transform",
-        height: clampValue,
+        height: isMobileTemplate ? "auto" : clampValue,
         zIndex: isLifted ? 26 : 0,
+        width: isMobileTemplate ? "90vw" : undefined,
+        maxWidth: isMobileTemplate ? "100%" : undefined,
+        x: motionX,
+        y: motionY,
       }}
       className={[
         "group/photo gallery-item",
         "flex-none",
         "shrink-0",
         "relative",
-        isPortraitOrSquare ? "portrait-mobile-boost" : "",
+        shouldApplyPortraitBoost ? "portrait-mobile-boost" : "",
         "cursor-zoom-in",
-        "transition-[opacity,transform,filter] duration-300 ease-out hover:!opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/50 focus-visible:ring-offset-2",
+        shouldApplyHoverFx
+          ? "transition-[opacity,transform,filter] duration-300 ease-out hover:!opacity-100"
+          : "",
+        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/50 focus-visible:ring-offset-2",
       ].join(" ")}
       role="button"
       tabIndex={0}
@@ -211,15 +263,18 @@ export function FixedHeightPhoto({
         alt={image.alt}
         // Même hauteur pour toutes, formats conservés.
         style={{
-          height: "100%",
-          width: "auto",
+          height: isMobileTemplate ? "auto" : "100%",
+          width: isMobileTemplate ? "100%" : "auto",
+          objectFit: isMobileTemplate ? "contain" : undefined,
           display: "block",
           transform: imageTransform,
           transformOrigin: "center center",
         }}
         className={[
-          "transition-[filter,transform] duration-300 ease-out group-hover/photo:brightness-[1.06] group-hover/photo:contrast-[1.05] group-hover/photo:drop-shadow-[0_18px_42px_rgba(0,0,0,0.28)]",
-          isPortraitOrSquare ? "portrait-mobile-boost-img" : "",
+          shouldApplyHoverFx
+            ? "transition-[filter,transform] duration-300 ease-out group-hover/photo:brightness-[1.06] group-hover/photo:contrast-[1.05] group-hover/photo:drop-shadow-[0_18px_42px_rgba(0,0,0,0.28)]"
+            : "",
+          shouldApplyPortraitBoost ? "portrait-mobile-boost-img" : "",
         ].join(" ")}
         loading={eager ? "eager" : "lazy"}
         fetchPriority={eager ? "high" : "auto"}
