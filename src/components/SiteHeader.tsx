@@ -14,22 +14,45 @@ const navItems: Array<{ href: string; label: string }> = [
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [isCondensed, setIsCondensed] = useState(false);
+  const [isCondensed, setIsCondensed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.scrollY > 24;
+  });
 
   useEffect(() => {
+    const condenseAt = 26;
+    const relaxAt = 18;
+    let rafId: number | null = null;
+
+    const update = () => {
+      rafId = null;
+      const y = window.scrollY;
+
+      setIsCondensed((prev) => {
+        if (!prev && y > condenseAt) return true;
+        if (prev && y < relaxAt) return false;
+        return prev;
+      });
+    };
+
     const onScroll = () => {
-      setIsCondensed(window.scrollY > 24);
+      if (rafId != null) return;
+      rafId = window.requestAnimationFrame(update);
     };
 
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafId != null) window.cancelAnimationFrame(rafId);
+    };
   }, []);
 
   return (
     <header
       className={[
-        "sticky top-0 z-50 border-b backdrop-blur-md transition-all duration-300",
+        "sticky top-0 z-50 border-b backdrop-blur-md transition-[padding,border-color,background-color] duration-300",
         isCondensed
           ? "border-black/10 bg-background/86"
           : "border-black/5 bg-background/72",
@@ -44,7 +67,7 @@ export function SiteHeader() {
         <Link
           href="/"
           className={[
-            "font-serif tracking-tight text-foreground transition-all duration-300",
+            "font-serif tracking-tight text-foreground transition-[font-size,letter-spacing] duration-300",
             isCondensed ? "text-lg" : "text-xl",
           ].join(" ")}
           aria-label={`${site.name} home`}

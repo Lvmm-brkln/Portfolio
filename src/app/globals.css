@@ -47,12 +47,6 @@ button:focus-visible,
   outline-offset: 2px;
 }
 
-@media (min-width: 640px) {
-  .gallery-scope:has(.gallery-item:hover) .gallery-item:not(:hover) {
-    opacity: 0.38;
-  }
-}
-
 .gallery-item {
   transition-timing-function: var(--easing-standard);
 }
