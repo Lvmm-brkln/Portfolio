@@ -321,19 +321,63 @@ export function ImageModalProvider({
 
               <AnimatePresence mode="sync" initial={false}>
                 {prev && state.prevIndex !== state.index ? (
+                  <div className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2">
+                    <motion.div
+                      key={`prev-wrap-${state.transitionKey}-${prev.src}`}
+                      style={{ willChange: "transform, opacity" }}
+                      initial={{
+                        opacity: 1,
+                        x: 0,
+                        scale: 1,
+                      }}
+                      animate={{
+                        opacity: 0,
+                        x: -state.direction * slidePx,
+                        scale: 0.995,
+                      }}
+                      exit={{
+                        opacity: 0,
+                        x: -state.direction * slidePx,
+                        scale: 0.995,
+                      }}
+                      transition={{
+                        duration: 0.35,
+                        ease: [0.2, 0.7, 0.2, 1],
+                      }}
+                    >
+                      <motion.img
+                        key={`prev-${state.transitionKey}-${prev.src}`}
+                        src={prev.src}
+                        alt={prev.alt}
+                        draggable={false}
+                        style={{
+                          display: "block",
+                          width: "auto",
+                          height: modalHeight,
+                          maxWidth: "94vw",
+                          objectFit: "contain",
+                          filter: "none",
+                          opacity: 1,
+                          transform: "scale(1)",
+                        }}
+                      />
+                    </motion.div>
+                  </div>
+                ) : null}
+
+                <div className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2">
                   <motion.div
-                    key={`prev-wrap-${state.transitionKey}-${prev.src}`}
-                    className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2"
+                    key={`curr-wrap-${state.transitionKey}-${current.src}`}
                     style={{ willChange: "transform, opacity" }}
                     initial={{
+                      opacity: 0,
+                      x: state.direction > 0 ? slidePx : -slidePx,
+                      scale: 1.01,
+                    }}
+                    animate={{
                       opacity: 1,
                       x: 0,
                       scale: 1,
-                    }}
-                    animate={{
-                      opacity: 0,
-                      x: -state.direction * slidePx,
-                      scale: 0.995,
                     }}
                     exit={{
                       opacity: 0,
@@ -346,10 +390,16 @@ export function ImageModalProvider({
                     }}
                   >
                     <motion.img
-                      key={`prev-${state.transitionKey}-${prev.src}`}
-                      src={prev.src}
-                      alt={prev.alt}
+                      key={`curr-${state.transitionKey}-${current.src}`}
+                      src={current.src}
+                      alt={current.alt}
                       draggable={false}
+                      drag="x"
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={0.08}
+                      onDragEnd={handleDragEnd}
+                      className="pointer-events-auto"
+                      onClick={(e) => e.stopPropagation()}
                       style={{
                         display: "block",
                         width: "auto",
@@ -362,55 +412,7 @@ export function ImageModalProvider({
                       }}
                     />
                   </motion.div>
-                ) : null}
-
-                <motion.div
-                  key={`curr-wrap-${state.transitionKey}-${current.src}`}
-                  className="pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2"
-                  style={{ willChange: "transform, opacity" }}
-                  initial={{
-                    opacity: 0,
-                    x: state.direction > 0 ? slidePx : -slidePx,
-                    scale: 1.01,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    x: 0,
-                    scale: 1,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    x: -state.direction * slidePx,
-                    scale: 0.995,
-                  }}
-                  transition={{
-                    duration: 0.35,
-                    ease: [0.2, 0.7, 0.2, 1],
-                  }}
-                >
-                  <motion.img
-                    key={`curr-${state.transitionKey}-${current.src}`}
-                    src={current.src}
-                    alt={current.alt}
-                    draggable={false}
-                    drag="x"
-                    dragConstraints={{ left: 0, right: 0 }}
-                    dragElastic={0.08}
-                    onDragEnd={handleDragEnd}
-                    className="pointer-events-auto"
-                    onClick={(e) => e.stopPropagation()}
-                    style={{
-                      display: "block",
-                      width: "auto",
-                      height: modalHeight,
-                      maxWidth: "94vw",
-                      objectFit: "contain",
-                      filter: "none",
-                      opacity: 1,
-                      transform: "scale(1)",
-                    }}
-                  />
-                </motion.div>
+                </div>
               </AnimatePresence>
             </div>
           </motion.div>
