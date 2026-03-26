@@ -4,6 +4,7 @@ import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { site } from "@/content/site";
 import { ImageModalProvider } from "@/components/ImageModalProvider";
+import { Analytics } from "@vercel/analytics/next";
 
 const headingSerif = Cormorant_Garamond({
   subsets: ["latin"],
@@ -48,6 +49,7 @@ export default function RootLayout({
           <SiteHeader />
           <ImageModalProvider>{children}</ImageModalProvider>
         </div>
+        <Analytics />
       </body>
     </html>
   );
